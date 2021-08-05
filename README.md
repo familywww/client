@@ -1,4 +1,4 @@
-# HappyFamily
+# VueStaticClient
 
 ## Project setup
 ```
