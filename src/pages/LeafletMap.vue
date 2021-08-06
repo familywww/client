@@ -1,6 +1,12 @@
 <template>
   <v-app id="app" :class="moveMarkerClassName" >
     <div style="width: 1415px;height: 100%;">
+      <v-tabs v-model="mapUrlIndex" dark background-color="teal darken-3" show-arrows opaque="0.8">
+        <v-tabs-slider color="teal lighten-3"></v-tabs-slider>
+        <v-tab v-for="(subItem, j) in mapControl.tile" :key="j" :value="j">
+          {{ subItem.name }}
+        </v-tab>
+      </v-tabs>
       <l-map
         ref="map"
         :zoom.sync="mapControl.zoom"
@@ -9,7 +15,7 @@
         :max-zoom="mapControl.maxZoom"
         :options.sync="mapControl.options"
       >
-        <l-tile-layer :url="mapControl.url" layer-type="base" />
+        <l-tile-layer :url="mapControl.tile[mapUrlIndex].url" layer-type="base" />
         <div
           v-for="group in markers.filter(item => { return item.type === 'point'})"
           :key="group.id"
@@ -69,7 +75,7 @@
         ></l-polyline>
       </l-map>
     </div>
-    <v-card max-width="220" style="z-index:900;position: absolute;top:1px;right:500px; background: #2b3575a8">
+    <v-card max-width="220" style="z-index:900;position: absolute;top:45px;right:500px; background: #2b3575a8">
       <v-card-title>
         <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
         <v-icon color="#00c421">mdi-home-group</v-icon>
@@ -325,10 +331,26 @@ export default {
       comboboxItems: [ 1, 2, 3, 4, ],
       comboboxVal: '',
       scrollInvoked: 0,
+      mapUrlIndex: 0,
       mapControl: {
-        url: 'http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png',
+        tile: [
+          { name: '公司实景', url: 'http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png', },
+          { name: '公司街景', url: 'http://tile.keepourfaith.com:8380/tile/street/{z}/{x}/{y}.png', },
+          { name: '谷歌标签', url: 'http://mt0.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌地形', url: 'http://mt0.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌卫星', url: 'http://mt0.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌线路', url: 'http://mt0.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌标卫', url: 'http://mt0.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌标地', url: 'http://mt3.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '百度实景', url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
+          { name: '百度街景', url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
+          { name: '高德实景', url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
+          { name: '高德街①', url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+          { name: '高德街②', url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
+          { name: '高德街③', url: 'http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+        ],
         zoom: 15,
-        minZoom: 7,
+        minZoom: 2,
         maxZoom: 18,
         center: L.latLng(39.59930651, 118.49209785),
         mousePosition: L.latLng(0, 0),
