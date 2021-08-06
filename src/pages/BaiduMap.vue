@@ -14,9 +14,9 @@
         :min-zoom="mapControl.minZoom"
         :max-zoom="mapControl.maxZoom"
         :crs="mapControl.tile[mapUrlIndex].crs"
-        :options.sync="mapControl.options"
+        :options.sync="options"
       >
-        <l-tile-layer :url="mapControl.tile[mapUrlIndex].url" layer-type="base" :options="{tms: mapControl.tile[mapUrlIndex].tms}" />
+        <l-tile-layer ref="tileLayer" :url="mapControl.tile[mapUrlIndex].url" :options="{tms: mapControl.tile[mapUrlIndex].tms}"/>
         <div
           v-for="group in markers.filter(item => { return item.type === 'point'})"
           :key="group.id"
@@ -156,10 +156,10 @@ import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import 'leaflet-draw'
 import * as Vue2Leaflet from 'vue2-leaflet'
-import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import 'proj4'
 import 'proj4leaflet'
+import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import videoJs from 'video.js'
 import 'video.js/dist/video-js.css'
 import flv from 'flv.js'
@@ -288,7 +288,7 @@ const iconSetting = {
     's_01': { name: '其他事件', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c5f5;', ftContentOrClass: '其', ftBeforeStyle: 'background:#00c5f5;font-size:17px;font-weight:bold;color:white;', },
   },
 }
-const B_CRS_EPSG900913 = new L.Proj.CRS(
+const baiduCrs = new L.Proj.CRS(
   'EPSG:900913',
   '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',
   {
@@ -352,33 +352,25 @@ export default {
       comboboxVal: '',
       scrollInvoked: 0,
       mapUrlIndex: 0,
+      tms: false,
+      crsObj: null,
       mapControl: {
         tile: [
           { name: '公司实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png', },
           { name: '公司街景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/street/{z}/{x}/{y}.png', },
-          { name: '谷歌标签', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌地形', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌卫星', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌线路', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌标卫', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌标地', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt3.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '高德实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
-          { name: '高德街①', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-          { name: '高德街②', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
-          { name: '高德街③', crs: L.CRS.EPSG3857, tms: false, url: 'http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-          { name: '百度实景', crs: B_CRS_EPSG900913, tms: true, url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
-          { name: '百度街景', crs: B_CRS_EPSG900913, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
-          { name: '百度街②', crs: B_CRS_EPSG900913, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
+          { name: '百度实景', crs: baiduCrs, tms: true, url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
+          { name: '百度街景', crs: baiduCrs, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
+          { name: '百度街②', crs: baiduCrs, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
         ],
         zoom: 15,
         minZoom: 2,
         maxZoom: 18,
         center: L.latLng(39.59930651, 118.49209785),
-        options: {
-          attributionControl: false,
-          zoomControl: false,
-          animate: true,
-        },
+      },
+      options: {
+        attributionControl: false,
+        zoomControl: false,
+        animate: true,
       },
       moveMarker: null,
       moveMarkerClassName: '',
@@ -633,68 +625,68 @@ export default {
 
 </script>
 <style>
-.leaflet-tooltip {
-  background-color: #2b3575;
-  border: 1px solid #00e0ec;
-  color: #fff;
-}
-.v-list-group__header__prepend-icon{
-  margin-right: 0 !important;
-}
-.v-list-group__header__prepend-icon .v-icon {
-  color:white !important;
-}
-.leaflet-interactive.active {
-  animation: marker-jump 0.5s 0s alternate infinite;
-  -webkit-animation: marker-jump 0.5s 0s alternate infinite;
-}
-@-webkit-keyframes marker-jump {
-  0% {margin-top: -47px;}
-  50% {margin-top: -55px;}
-}
-@keyframes marker-jump {
-  0% {margin-top: -47px;}
-  50% {margin-top: -55px;}
-}
-.camera_cursor.yes video{
-  cursor: url('../../public/05.png') 17 18, auto !important;
-}
-.camera_cursor *:not(video){
-  cursor: url('../../public/06.png') 17 18, auto !important;
-}
-video::-webkit-media-controls-play-button {
-  display: none !important;
-}
-/*当前播放时间*/
-video::-webkit-media-controls-current-time-display {
-  display: none !important;
-}
-/*剩余时间*/
-video::-webkit-media-controls-time-remaining-display {
-  display: none !important;
-}
-/*音量按钮*/
-video::-webkit-media-controls-volume-control-container {
-  display: none !important;
-}
-/*// 时间轴*/
-video::-webkit-media-controls-timeline {
-  display: none !important;
-}
+  .leaflet-tooltip {
+    background-color: #2b3575;
+    border: 1px solid #00e0ec;
+    color: #fff;
+  }
+  .v-list-group__header__prepend-icon{
+    margin-right: 0 !important;
+  }
+  .v-list-group__header__prepend-icon .v-icon {
+    color:white !important;
+  }
+  .leaflet-interactive.active {
+    animation: marker-jump 0.5s 0s alternate infinite;
+    -webkit-animation: marker-jump 0.5s 0s alternate infinite;
+  }
+  @-webkit-keyframes marker-jump {
+    0% {margin-top: -47px;}
+    50% {margin-top: -55px;}
+  }
+  @keyframes marker-jump {
+    0% {margin-top: -47px;}
+    50% {margin-top: -55px;}
+  }
+  .camera_cursor.yes video{
+    cursor: url('../../public/05.png') 17 18, auto !important;
+  }
+  .camera_cursor *:not(video){
+    cursor: url('../../public/06.png') 17 18, auto !important;
+  }
+  video::-webkit-media-controls-play-button {
+    display: none !important;
+  }
+  /*当前播放时间*/
+  video::-webkit-media-controls-current-time-display {
+    display: none !important;
+  }
+  /*剩余时间*/
+  video::-webkit-media-controls-time-remaining-display {
+    display: none !important;
+  }
+  /*音量按钮*/
+  video::-webkit-media-controls-volume-control-container {
+    display: none !important;
+  }
+  /*// 时间轴*/
+  video::-webkit-media-controls-timeline {
+    display: none !important;
+  }
 
-::-webkit-scrollbar{
-  width: 5px;
-}
-/*定义滚动条轨道 内阴影+圆角*/
-::-webkit-scrollbar-track{
-  border-radius: 10px;
-  background-color: rgba(0,0,0,0.1);
-}
+  ::-webkit-scrollbar{
+    width: 5px;
+  }
+  /*定义滚动条轨道 内阴影+圆角*/
+  ::-webkit-scrollbar-track{
+    border-radius: 10px;
+    background-color: rgba(0,0,0,0.1);
+  }
 
-/*定义滑块 内阴影+圆角*/
-::-webkit-scrollbar-thumb{
-  border-radius: 10px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-  background-color: rgb(6, 241, 202);
-}
+  /*定义滑块 内阴影+圆角*/
+  ::-webkit-scrollbar-thumb{
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: rgb(6, 241, 202);
+  }
 </style>
