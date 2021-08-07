@@ -1,7 +1,7 @@
 console.log('BASE_API: ' + process.env.VUE_APP_BASE_API)
 console.log('OUTPUT_DIR: ' + process.env.VUE_APP_OUTPUT_DIR)
 module.exports = {
-  publicPath: "/",
+  publicPath: "/vue-static-client/a",
   outputDir: process.env.VUE_APP_OUTPUT_DIR,
   assetsDir: "assets",
   devServer: {
