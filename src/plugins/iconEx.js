@@ -150,10 +150,12 @@ function getPresetOpt (index, name) {
     result.name = target
     return result
   }
+  // 背景字体类或内容
   result.BgContentOrClass = (target) => {
     result.bgContentOrClass = target
     return result
   }
+  // 背景字体颜色
   result.BgBeforeColor = (target) => {
     if (result.bgStyle) {
       result.bgStyle = result.bgStyle.replaceAll('#00c421', target)
@@ -166,34 +168,40 @@ function getPresetOpt (index, name) {
     }
     return result
   }
+  // 背景字体边框颜色
   result.BgBorderColor = (target) => {
     if (result.bgBeforeStyle) {
       result.bgBeforeStyle = result.bgBeforeStyle.replaceAll('#FFF', target)
     }
     return result
   }
+  // 背景字体大小
   result.BgFontSize = (target) => {
     if (result.bgBeforeStyle) {
       result.bgBeforeStyle = result.bgBeforeStyle.replaceAll('50px', target).replaceAll('45px', target)
     }
     return result
   }
+  // 上层字体类或内容
   result.FtContentOrClass = (target) => {
     result.ftContentOrClass = target
     return result
   }
+  // 上层字体颜色
   result.FtBeforeColor = (target) => {
     if (result.ftBeforeStyle) {
       result.ftBeforeStyle = result.ftBeforeStyle.replaceAll('white', target).replaceAll('black', target)
     }
     return result
   }
+  // 上层字体大小
   result.FtFontSize = (target) => {
     if (result.ftBeforeStyle) {
       result.ftBeforeStyle = result.ftBeforeStyle.replaceAll('17px', target).replaceAll('18px', target).replaceAll('25px', target)
     }
     return result
   }
+  // 上层文字
   result.FtText = (target) => {
     result.ftText = target
     return result
