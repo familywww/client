@@ -61,13 +61,14 @@
       "parser": "babel-eslint"
     },
     "rules": {
+      "array-bracket-spacing": "off",
       "generator-star-spacing": "off",
       "comma-dangle": [
         "error",
         {
           "arrays": "always",
           "objects": "always",
-          "imports": "only-multiline",
+          "imports": "always",
           "exports": "only-multiline",
           "functions": "only-multiline"
         }

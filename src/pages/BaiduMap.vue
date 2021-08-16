@@ -14,9 +14,10 @@
         :min-zoom="mapControl.minZoom"
         :max-zoom="mapControl.maxZoom"
         :crs="mapControl.tile[mapUrlIndex].crs"
-        :options.sync="options"
+        tileLayer.chinaProvider="Google.Normal.Map"
+        :options.sync="mapControl.options"
       >
-        <l-tile-layer ref="tileLayer" :url="mapControl.tile[mapUrlIndex].url" :options="{tms: mapControl.tile[mapUrlIndex].tms}"/>
+        <l-tile-layer :url="mapControl.tile[mapUrlIndex].url" layer-type="base" :options="mapControl.tile[mapUrlIndex]" />
         <div
           v-for="group in markers.filter(item => { return item.type === 'point'})"
           :key="group.id"
@@ -153,18 +154,18 @@
 
 <script>
 import 'leaflet/dist/leaflet.css'
-import * as L from 'leaflet'
+import L from '../plugins/leafletEx'
 import 'leaflet-draw'
 import * as Vue2Leaflet from 'vue2-leaflet'
-import 'proj4'
-import 'proj4leaflet'
 import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import videoJs from 'video.js'
 import 'video.js/dist/video-js.css'
 import flv from 'flv.js'
 import 'videojs-flvjs'
-import IconEx from '../plugins/iconEx'
+import '../plugins/leaflet.ChineseTmsProviders'
+import '../plugins/leaflet.mapCorrection'
+
 const allVideoItem = [
   { type: 'application/x-mpegURL', name: '全国风景总览', src: 'https://gcalic.v.myalicdn.com/gc/wgw05_1/index.m3u8', },
   { type: 'application/x-mpegURL', name: '黟县宏村月沼', src: 'https://gctxyc.liveplay.myqcloud.com/gc/yxhcyz_1/index.m3u8', },
@@ -241,13 +242,13 @@ const allVideoItem = [
 ]
 const iconSetting = {
   point: {
-    's_01': IconEx.getPresetOpt(0, '轨迹开始').BgBeforeColor('#12a336').FtContentOrClass('起'), // { name: '轨迹开始', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#12a336;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '起', ftBeforeStyle: 'background:#12a336;font-size:18px;font-weight:bold;color:white;', },
-    's_02': IconEx.getPresetOpt(1, '轨迹过程').BgBeforeColor('#ff2a00'), // { name: '轨迹过程', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#ff2a00;-webkit-text-stroke:0.05em #FFF', },
-    's_03': IconEx.getPresetOpt(1, '轨迹进行').BgBeforeColor('#ffa400').BgContentOrClass('mdi mdi-human-male'), // { name: '轨迹进行', bgContentOrClass: 'mdi mdi-human-male', bgBeforeStyle: 'font-size:50px;color:#ffa400;-webkit-text-stroke:0.05em #FFF', },
-    's_04': IconEx.getPresetOpt(0, '轨迹结束').BgBeforeColor('#952b00').FtContentOrClass('终'), // { name: '轨迹结束', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#952b00;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '终', ftBeforeStyle: 'background:#952b00;font-size:18px;font-weight:bold;color:white;', },
+    's_01': L.DivIconPresetOption(0, '轨迹开始').BgBeforeColor('#12a336').FtContentOrClass('起'), // { name: '轨迹开始', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#12a336;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '起', ftBeforeStyle: 'background:#12a336;font-size:18px;font-weight:bold;color:white;', },
+    's_02': L.DivIconPresetOption(1, '轨迹过程').BgBeforeColor('#ff2a00'), // { name: '轨迹过程', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#ff2a00;-webkit-text-stroke:0.05em #FFF', },
+    's_03': L.DivIconPresetOption(1, '轨迹进行').BgBeforeColor('#ffa400').BgContentOrClass('mdi mdi-human-male'), // { name: '轨迹进行', bgContentOrClass: 'mdi mdi-human-male', bgBeforeStyle: 'font-size:50px;color:#ffa400;-webkit-text-stroke:0.05em #FFF', },
+    's_04': L.DivIconPresetOption(0, '轨迹结束').BgBeforeColor('#952b00').FtContentOrClass('终'), // { name: '轨迹结束', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#952b00;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '终', ftBeforeStyle: 'background:#952b00;font-size:18px;font-weight:bold;color:white;', },
   },
   building: {
-    's_01': IconEx.getPresetOpt(2, '房屋楼宇').BgBeforeColor('#00c421').FtContentOrClass('mdi mdi-home-group'), // { name: '房屋楼宇', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c421;', ftContentOrClass: 'mdi mdi-home-group', ftBeforeStyle: 'background:#00c421;font-size:25px;', },
+    's_01': L.DivIconPresetOption(2, '房屋楼宇').BgBeforeColor('#00c421').FtContentOrClass('mdi mdi-home-group'), // { name: '房屋楼宇', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c421;', ftContentOrClass: 'mdi mdi-home-group', ftBeforeStyle: 'background:#00c421;font-size:25px;', },
   },
   public: {
     's_01': { name: '公用设施', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#f44a00;', ftContentOrClass: 'mdi mdi-layers-triple', ftBeforeStyle: 'background:#f44a00;font-size:25px;', },
@@ -259,7 +260,7 @@ const iconSetting = {
     's_01': { name: '环境设施', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#fe2954;', ftContentOrClass: 'mdi mdi-hydro-power', ftBeforeStyle: 'background:#fe2954;font-size:25px;', },
   },
   green: {
-    's_01': IconEx.getPresetOpt(2, '绿化设施').BgBeforeColor('#44b900').FtContentOrClass('mdi mdi-leaf'), // { name: '绿化设施', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#44b900;', ftContentOrClass: 'mdi mdi-leaf', ftBeforeStyle: 'background:#44b900;font-size:25px;', },
+    's_01': L.DivIconPresetOption(2, '绿化设施').BgBeforeColor('#44b900').FtContentOrClass('mdi mdi-leaf'), // { name: '绿化设施', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#44b900;', ftContentOrClass: 'mdi mdi-leaf', ftBeforeStyle: 'background:#44b900;font-size:25px;', },
   },
   org: {
     's_01': { name: '农户资源', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c5f5;', ftContentOrClass: 'mdi mdi-tractor', ftBeforeStyle: 'background:#00c5f5;font-size:25px;', },
@@ -267,10 +268,10 @@ const iconSetting = {
   },
   camera: {
     's_01': { name: '在线设备', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00f0ff;', ftContentOrClass: 'mdi mdi-webcam', ftBeforeStyle: 'background:#00f0ff;font-size:25px;', },
-    's_02': IconEx.getPresetOpt(3, '离线设备').BgBeforeColor('#808080').FtContentOrClass('mdi mdi-webcam'), // { name: '离线设备', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#808080;-webkit-text-stroke:0.02em #FFF', ftContentOrClass: 'mdi mdi-webcam', ftBeforeStyle: 'background:#808080;font-size:25px;', },
+    's_02': L.DivIconPresetOption(3, '离线设备').BgBeforeColor('#808080').FtContentOrClass('mdi mdi-webcam'), // { name: '离线设备', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#808080;-webkit-text-stroke:0.02em #FFF', ftContentOrClass: 'mdi mdi-webcam', ftBeforeStyle: 'background:#808080;font-size:25px;', },
   },
   environment2: {
-    's_01': IconEx.getPresetOpt(4, '市容环境').BgBeforeColor('#00c421').FtContentOrClass('环'), // { name: '市容环境', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c421;', ftContentOrClass: '环', ftBeforeStyle: 'background:#00c421;font-size:17px;font-weight:bold;color:white;', },
+    's_01': L.DivIconPresetOption(4, '市容环境').BgBeforeColor('#00c421').FtContentOrClass('环'), // { name: '市容环境', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c421;', ftContentOrClass: '环', ftBeforeStyle: 'background:#00c421;font-size:17px;font-weight:bold;color:white;', },
   },
   advertisement: {
     's_01': { name: '宣传广告', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#b200e8;', ftContentOrClass: '宣', ftBeforeStyle: 'background:#b200e8;font-size:17px;font-weight:bold;color:white;', },
@@ -288,23 +289,6 @@ const iconSetting = {
     's_01': { name: '其他事件', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c5f5;', ftContentOrClass: '其', ftBeforeStyle: 'background:#00c5f5;font-size:17px;font-weight:bold;color:white;', },
   },
 }
-const baiduCrs = new L.Proj.CRS(
-  'EPSG:900913',
-  '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',
-  {
-    resolutions: (function () {
-      const level = 19
-      let res = []
-      res[0] = Math.pow(2, 18)
-      for (let i = 1; i < level; i++) {
-        res[i] = Math.pow(2, (18 - i))
-      }
-      return res
-    }()),
-    origin: [ 0, 0, ],
-    bounds: L.bounds([ 20037508.342789244, 0, ], [ 0, 20037508.342789244, ]),
-  }
-)
 export default {
   name: 'mapTest',
   components: {
@@ -316,6 +300,14 @@ export default {
     'l-tooltip': Vue2Leaflet.LTooltip,
     // 'l-circle': Vue2Leaflet.LCircle,
     'l-marker-cluster': vueLeafletMarkerCluster,
+  },
+  watch: {
+    // nowZoom: {
+    //   handler (now, old) {
+    //     console.log('now:', now)
+    //     console.log('old:', old)
+    //   },
+    // },
   },
   created () {
     this.init()
@@ -352,25 +344,35 @@ export default {
       comboboxVal: '',
       scrollInvoked: 0,
       mapUrlIndex: 0,
-      tms: false,
-      crsObj: null,
       mapControl: {
         tile: [
           { name: '公司实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png', },
           { name: '公司街景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/street/{z}/{x}/{y}.png', },
-          { name: '百度实景', crs: baiduCrs, tms: true, url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
-          { name: '百度街景', crs: baiduCrs, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
-          { name: '百度街②', crs: baiduCrs, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
+          // { name: '谷歌标签', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          // { name: '谷歌地形', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          // { name: '谷歌卫星', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          // { name: '谷歌线路', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌标卫', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '谷歌标地', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt3.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+          { name: '高德实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
+          { name: '高德街①', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+          { name: '高德街②', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
+          { name: '高德街③', crs: L.CRS.EPSG3857, tms: false, url: 'http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+          { name: '百度实景', crs: L.CRS.Baidu, tms: true, url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
+          { name: '谷歌街景', crs: L.CRS.EPSG3857, tms: true, url: 'http://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', },
+          { name: '百度街景', crs: L.CRS.Baidu, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
+          { name: '百度街②', crs: L.CRS.Baidu, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
         ],
         zoom: 15,
         minZoom: 2,
         maxZoom: 18,
-        center: L.latLng(39.59930651, 118.49209785),
-      },
-      options: {
-        attributionControl: false,
-        zoomControl: false,
-        animate: true,
+        // center: L.latLng(39.59930651, 118.49209785),
+        center: L.latLng(39.914853, 116.403901),
+        options: {
+          attributionControl: false,
+          zoomControl: false,
+          animate: true,
+        },
       },
       moveMarker: null,
       moveMarkerClassName: '',
@@ -420,8 +422,8 @@ export default {
           name: '北京',
           type: 'point',
           children: [
-            { id: 'a', lng: 116.40014648, lat: 39.88655771, status: 's_01', },
-            { id: 'b', lng: 116.40014648, lat: 39.99055771, status: 's_02', },
+            { id: 'a', lng: 116.4039640000000, lat: 39.91509900000000, status: 's_01', },
+            { id: 'b', lng: 116.3972280000000, lat: 39.90960400000000, status: 's_02', },
           ],
         },
       ],
@@ -465,14 +467,32 @@ export default {
       this.scrollInvoked++
     },
     init () {
+      L.CRS.Baidu = new L.Proj.CRS(
+        'EPSG:900913',
+        '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',
+        {
+          resolutions: (function () {
+            const level = 19
+            let res = []
+            res[0] = Math.pow(2, 18)
+            for (let i = 1; i < level; i++) {
+              res[i] = Math.pow(2, (18 - i))
+            }
+            return res
+          }()),
+          origin: [ 0, 0, ],
+          bounds: L.bounds([ 20037508.342789244, 0, ], [ 0, 20037508.342789244, ]),
+        }
+      )
+      // this.leafletEx()
       for (let type in iconSetting) {
         this.markerIconOptions[type] = {}
         for (let status in iconSetting[type]) {
           const classId = type + status
           const tS = {}
           tS.name = iconSetting[type][status].name
-          tS.markerOption = IconEx.createDivOption(classId, iconSetting[type][status])
-          tS.clusterOption = IconEx.createDivOption(
+          tS.markerOption = L.DivIconOption(classId, iconSetting[type][status])
+          tS.clusterOption = L.DivIconOption(
             'cluster_'.concat(classId),
             {
               ftText: '##',
@@ -487,6 +507,156 @@ export default {
       }
       this.makeMarkerObj(73)
       this.createMarkerIcon(this.markers)
+    },
+    leafletEx () {
+      L.coordConver = function () {
+        return new L.CoordConver()
+      }
+      L.CoordConver = function () {
+        /** 百度转84 */
+        this.bd09_To_gps84 = function (lng, lat) {
+          const gcj02 = this.bd09_To_gcj02(lng, lat)
+          const map84 = this.gcj02_To_gps84(gcj02.lng, gcj02.lat)
+          return map84
+        }
+        /** 84转百度 */
+        this.gps84_To_bd09 = function (lng, lat) {
+          const gcj02 = this.gps84_To_gcj02(lng, lat)
+          const bd09 = this.gcj02_To_bd09(gcj02.lng, gcj02.lat)
+          return bd09
+        }
+        /** 84转火星 */
+        this.gps84_To_gcj02 = function (lng, lat) {
+          let dLat = transformLat(lng - 105.0, lat - 35.0)
+          let dLng = transformLng(lng - 105.0, lat - 35.0)
+          let radLat = lat / 180.0 * pi
+          let magic = Math.sin(radLat)
+          magic = 1 - ee * magic * magic
+          const sqrtMagic = Math.sqrt(magic)
+          dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi)
+          dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi)
+          const mgLat = lat + dLat
+          const mgLng = lng + dLng
+          const newCoord = {
+            lng: mgLng,
+            lat: mgLat,
+          }
+          return newCoord
+        }
+        /** 火星转84 */
+        this.gcj02_To_gps84 = function (lng, lat) {
+          const coord = transform(lng, lat)
+          const lontitude = lng * 2 - coord.lng
+          const latitude = lat * 2 - coord.lat
+          const newCoord = {
+            lng: lontitude,
+            lat: latitude,
+          }
+          return newCoord
+        }
+        /** 火星转百度 */
+        this.gcj02_To_bd09 = function (x, y) {
+          const z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * xPi)
+          const theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * xPi)
+          const bdLng = z * Math.cos(theta) + 0.0065
+          const bdLat = z * Math.sin(theta) + 0.006
+          const newCoord = {
+            lng: bdLng,
+            lat: bdLat,
+          }
+          return newCoord
+        }
+        /** 百度转火星 */
+        this.bd09_To_gcj02 = function (bdLng, bdLat) {
+          const x = bdLng - 0.0065
+          const y = bdLat - 0.006
+          const z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * xPi)
+          const theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * xPi)
+          const ggLng = z * Math.cos(theta)
+          const ggLat = z * Math.sin(theta)
+          const newCoord = {
+            lng: ggLng,
+            lat: ggLat,
+          }
+          return newCoord
+        }
+
+        const pi = 3.1415926535897932384626
+        const a = 6378245.0
+        const ee = 0.00669342162296594323
+        const xPi = pi * 3000.0 / 180.0
+        // const R = 6378137
+
+        function transform (lng, lat) {
+          let dLat = transformLat(lng - 105.0, lat - 35.0)
+          let dLng = transformLng(lng - 105.0, lat - 35.0)
+          let radLat = lat / 180.0 * pi
+          let magic = Math.sin(radLat)
+          magic = 1 - ee * magic * magic
+          const sqrtMagic = Math.sqrt(magic)
+          dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi)
+          dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi)
+          const mgLat = lat + dLat
+          const mgLng = lng + dLng
+          const newCoord = {
+            lng: mgLng,
+            lat: mgLat,
+          }
+          return newCoord
+        }
+
+        function transformLat (x, y) {
+          let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x))
+          ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0
+          ret += (20.0 * Math.sin(y * pi) + 40.0 * Math.sin(y / 3.0 * pi)) * 2.0 / 3.0
+          ret += (160.0 * Math.sin(y / 12.0 * pi) + 320 * Math.sin(y * pi / 30.0)) * 2.0 / 3.0
+          return ret
+        }
+
+        function transformLng (x, y) {
+          let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x))
+          ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0
+          ret += (20.0 * Math.sin(x * pi) + 40.0 * Math.sin(x / 3.0 * pi)) * 2.0 / 3.0
+          ret += (150.0 * Math.sin(x / 12.0 * pi) + 300.0 * Math.sin(x / 30.0 * pi)) * 2.0 / 3.0
+          return ret
+        }
+      }
+      L.GridLayer.include({
+        _setZoomTransform: function (level, _center, zoom) {
+          let center = _center
+          if (center !== undefined && this.options) {
+            if (this.options.name === '百度街景') {
+              center = L.coordConver().gcj02_To_bd09(_center.lng, _center.lat)
+            } else {
+            }
+          }
+          const scale = this._map.getZoomScale(zoom, level.zoom)
+          const translate = level.origin.multiplyBy(scale)
+            .subtract(this._map._getNewPixelOrigin(center, zoom)).round()
+
+          if (L.Browser.any3d) {
+            L.DomUtil.setTransform(level.el, translate, scale)
+          } else {
+            L.DomUtil.setPosition(level.el, translate)
+          }
+        },
+        _getTiledPixelBounds: function (_center) {
+          let center = _center
+          if (center !== undefined && this.options) {
+            if (this.options.name === '百度街景') {
+              center = L.coordConver().gcj02_To_bd09(_center.lng, _center.lat)
+            } else {
+            }
+          }
+          const map = this._map
+          const mapZoom = map._animatingZoom ? Math.max(map._animateToZoom, map.getZoom()) : map.getZoom()
+          const scale = map.getZoomScale(mapZoom, this._tileZoom)
+          const pixelCenter = map.project(center, this._tileZoom).floor()
+          const halfSize = map.getSize().divideBy(scale * 2)
+
+          return new L.Bounds(pixelCenter.subtract(halfSize), pixelCenter.add(halfSize))
+        },
+      })
     },
     createMarkerIcon (markersGroup) {
       markersGroup.forEach(group => {

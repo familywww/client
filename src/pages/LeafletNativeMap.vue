@@ -1,97 +1,18 @@
 <template>
   <v-app id="app" :class="moveMarkerClassName" >
     <div style="width: 1415px;height: 100%;">
-      <v-tabs v-model="mapUrlIndex" dark background-color="teal darken-3" show-arrows opaque="0.8">
+      <v-tabs v-model="mapUrlIndex" dark background-color="teal darken-3" show-arrows>
         <v-tabs-slider color="teal lighten-3"></v-tabs-slider>
-        <v-tab v-for="(subItem, j) in mapControl.tile" :key="j" :value="j">
+        <v-tab v-for="(subItem, j) in mapControl.tiles" :key="j" :value="j" @click="layerChange(j)">
           {{ subItem.name }}
         </v-tab>
       </v-tabs>
-      <l-map
-        ref="map"
-        :zoom.sync="mapControl.zoom"
-        :center.sync="mapControl.center"
-        :min-zoom="mapControl.minZoom"
-        :max-zoom="mapControl.maxZoom"
-        :crs="mapControl.tile[mapUrlIndex].crs"
-        :options.sync="mapControl.options"
-        @move="zoomEnd"
-      >
-        <l-control-layers :sortLayers="true" />
-        <l-tile-layer
-          v-for="layer in mapControl.tile[mapUrlIndex].maps"
-          :key="layer.name"
-          :name="layer.name"
-          :visible="layer.visible"
-          :url="layer.url"
-          :options="{tms: mapControl.tile[mapUrlIndex].tms, zIndex: layer.zIndex, opacity: layer.opacity}"
-          :subdomains="mapControl.tile[mapUrlIndex].subdomains"
-          :layer-type="layer.type"
-        />
-
-        <div
-          v-for="group in markers.filter(item => { return item.type === 'point'})"
-          :key="group.id"
-        >
-          <l-marker
-            ref="points"
-            v-for="marker in group.children"
-            :key="'mark-' + marker.id"
-            :id="marker.id"
-            :lat-lng="marker"
-            :draggable="false"
-            :icon="marker.icon"
-            @mousedown="cameraCursorShow(marker)"
-          >
-            <l-tooltip :options="{ direction: 'bottom', interactice: true, }">
-              <span>{{ marker.videoItem ? marker.videoItem.src : marker.status }}</span>
-            </l-tooltip>
-          </l-marker>
-        </div>
-        <div
-          v-for="(optValue, optKey) in markerIconOptions"
-          :key="optKey"
-        >
-          <l-marker-cluster
-            v-for="(typeValue, typeKey) in optValue"
-            :key="typeKey"
-            :options="createClusterOptions(typeValue.clusterOption)"
-          >
-            <div
-              v-for="markGroup in markers.filter(item => { return item.type !== 'point' && item.type === optKey})"
-              :key="'markGroup-' + markGroup.groupId"
-              :id="markGroup.groupId"
-            >
-              <l-marker
-                ref="points"
-                v-for="marker in markGroup.children.filter(item => { return item.status === typeKey })"
-                :key="'mark-' + marker.id"
-                :id="marker.id"
-                :lat-lng="marker"
-                :draggable="false"
-                :icon="marker.icon"
-                @mousedown="cameraCursorShow(marker)"
-              >
-                <l-tooltip :options="{ direction: 'bottom', interactice: true, }">
-                  <span>{{ marker.videoItem ? marker.videoItem.name : (marker.lng + ':' + marker.lat) }}</span>
-                </l-tooltip>
-              </l-marker>
-            </div>
-          </l-marker-cluster>
-        </div>
-        <l-polyline
-          v-for="item in markers.filter(group => { return group.type === 'point'})"
-          :key="item.id"
-          :lat-lngs="item.children"
-          :weight="3"
-          :color="'#fffb11'"
-        ></l-polyline>
-      </l-map>
+      <div id='map' style="width: 100%;height: 100%;"></div>
     </div>
     <v-card max-width="220" style="z-index:900;position: absolute;top:45px;right:500px; background: #2b3575a8">
       <v-card-title>
         <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
-        <v-icon color="#00c421" @click="setZoom">mdi-home-group</v-icon>
+        <v-icon color="#00c421">mdi-home-group</v-icon>
         <v-icon color="#f44a00">mdi-layers-triple</v-icon>
         <v-icon color="#eb9201">mdi-traffic-light</v-icon>
         <v-icon color="#fe2954">mdi-hydro-power</v-icon>
@@ -166,10 +87,6 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from '../plugins/leafletEx'
-import 'leaflet-draw'
-import * as Vue2Leaflet from 'vue2-leaflet'
-import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import videoJs from 'video.js'
 import 'video.js/dist/video-js.css'
 import flv from 'flv.js'
@@ -250,10 +167,10 @@ const allVideoItem = [
 ]
 const iconSetting = {
   point: {
-    's_01': L.DivIconPresetOption(0, '轨迹开始').BgBeforeColor('#12a336').FtContentOrClass('起'), // { name: '轨迹开始', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#12a336;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '起', ftBeforeStyle: 'background:#12a336;font-size:18px;font-weight:bold;color:white;', },
+    's_01': L.DivIconPresetOption(0, '轨迹开始').BgBeforeColor('#12a336').FtContentOrClass('百'), // { name: '轨迹开始', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#12a336;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '起', ftBeforeStyle: 'background:#12a336;font-size:18px;font-weight:bold;color:white;', },
     's_02': L.DivIconPresetOption(1, '轨迹过程').BgBeforeColor('#ff2a00'), // { name: '轨迹过程', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#ff2a00;-webkit-text-stroke:0.05em #FFF', },
     's_03': L.DivIconPresetOption(1, '轨迹进行').BgBeforeColor('#ffa400').BgContentOrClass('mdi mdi-human-male'), // { name: '轨迹进行', bgContentOrClass: 'mdi mdi-human-male', bgBeforeStyle: 'font-size:50px;color:#ffa400;-webkit-text-stroke:0.05em #FFF', },
-    's_04': L.DivIconPresetOption(0, '轨迹结束').BgBeforeColor('#952b00').FtContentOrClass('终'), // { name: '轨迹结束', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#952b00;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '终', ftBeforeStyle: 'background:#952b00;font-size:18px;font-weight:bold;color:white;', },
+    's_04': L.DivIconPresetOption(0, '轨迹结束').BgBeforeColor('#952b00').FtContentOrClass('谷'), // { name: '轨迹结束', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#952b00;-webkit-text-stroke:0.05em #FFF', ftContentOrClass: '终', ftBeforeStyle: 'background:#952b00;font-size:18px;font-weight:bold;color:white;', },
   },
   building: {
     's_01': L.DivIconPresetOption(2, '房屋楼宇').BgBeforeColor('#00c421').FtContentOrClass('mdi mdi-home-group'), // { name: '房屋楼宇', bgContentOrClass: 'mdi mdi-map-marker', bgBeforeStyle: 'font-size:50px;color:#00c421;', ftContentOrClass: 'mdi mdi-home-group', ftBeforeStyle: 'background:#00c421;font-size:25px;', },
@@ -300,21 +217,20 @@ const iconSetting = {
 export default {
   name: 'mapTest',
   components: {
-    'l-map': Vue2Leaflet.LMap,
-    'LControlLayers': Vue2Leaflet.LControlLayers,
-    'l-tile-layer': Vue2Leaflet.LTileLayer,
-    // 'l-wms-tile-layer': Vue2Leaflet.LWMSTileLayer,
-    'l-polyline': Vue2Leaflet.LPolyline,
-    // 'l-polygon': Vue2Leaflet.LPolygon,
-    'l-marker': Vue2Leaflet.LMarker,
-    'l-tooltip': Vue2Leaflet.LTooltip,
-    // 'l-circle': Vue2Leaflet.LCircle,
-    'l-marker-cluster': vueLeafletMarkerCluster,
+  },
+  watch: {
+    // nowZoom: {
+    //   handler (now, old) {
+    //     console.log('now:', now)
+    //     console.log('old:', old)
+    //   },
+    // },
   },
   created () {
     this.init()
   },
   mounted () {
+    this.leafletEx()
     this.videoInit()
 
     const self = this
@@ -342,86 +258,80 @@ export default {
   },
   data () {
     return {
-      comboboxItems: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, ],
-      comboboxVal: 0,
+      comboboxItems: [ 1, 2, 3, 4, ],
+      comboboxVal: '',
       scrollInvoked: 0,
       mapUrlIndex: 0,
       mapControl: {
-        tile: [
-          {
-            name: '高德',
-            crs: L.CRS.EPSG3857,
-            tms: false,
-            subdomains: '1234',
-            maps: [
-              { name: 'st6', zIndex: 1, opacity: 1.0, visible: false, type: 'base', url: '//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
-              { name: 'st7', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-              { name: 'rd7', zIndex: 3, opacity: 1.0, visible: true, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-              { name: 'rd8', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
-              { name: '标签', zIndex: 5, opacity: 1.0, visible: false, type: 'overlay', url: '//webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', },
-            ],
-            layers: [
-            ],
-          },
+        tiles: [
           {
             name: '百度',
-            crs: L.CRS.Baidu(true),
-            tms: true,
-            subdomains: '0123456789',
-            maps: [
-              { name: '卫星', zIndex: 1, opacity: 1.0, visible: false, type: 'base', url: 'https://maponline{s}.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
-              { name: '街景', zIndex: 2, opacity: 1.0, visible: true, type: 'base', url: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
-              { name: '街②', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
-              { name: '标签', zIndex: 4, opacity: 1.0, visible: false, type: 'overlay', url: 'http://online{s}.map.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&styles=sl&v=020', },
-            ],
-            layers: [
-            ],
-          },
-          {
-            name: 'Geoq',
-            crs: L.CRS.EPSG3857,
-            tms: false,
-            subdomains: 'abc',
-            maps: [
-              { name: 'map', zIndex: 1, opacity: 1.0, visible: true, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}', },
-              { name: 'PurplishBlue', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}', },
-              { name: 'Gray', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetGray/MapServer/tile/{z}/{y}/{x}', },
-              { name: 'Warm', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetWarm/MapServer/tile/{z}/{y}/{x}', },
-              { name: 'Hydro', zIndex: 5, opacity: 1.0, visible: false, type: 'overlay', url: '//thematic.geoq.cn/arcgis/rest/services/ThematicMaps/WorldHydroMap/MapServer/tile/{z}/{y}/{x}', },
-            ],
-            layers: [
-            ],
+            crs: L.CRS.Baidu,
+            zoom: 17,
+            maps: {
+              '卫星': L.tileLayer('https://maponline{s}.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', { tms: true, subdomains: [ 1, 2, 3, ], }),
+              '街景': L.tileLayer('http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', { tms: true, subdomains: [ 1, 2, 3, ], }),
+              '街②': L.tileLayer('http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', { tms: true, subdomains: [ 1, 2, 3, ], }),
+            },
+            layers: {
+              '标签': L.tileLayer('http://online{s}.map.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&styles=sl&v=020', { tms: true, subdomains: [ 1, 2, 3, ], }),
+            },
           },
           {
             name: '谷歌',
             crs: L.CRS.EPSG3857,
+            zoom: 16,
+            maps: {
+              '标卫①': L.tileLayer('//mt{s}.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '标卫②': L.tileLayer('//www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '标地①': L.tileLayer('//mt{s}.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '线路①': L.tileLayer('//mt{s}.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '线路②': L.tileLayer('//www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '卫星①': L.tileLayer('//mt{s}.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '卫星②': L.tileLayer('//www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+            },
+            layers: {
+              '地形': L.tileLayer('//mt{s}.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+              '标签': L.tileLayer('//mt{s}.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', { tms: false, subdomains: [ 0, 1, 2, 3, ], }),
+            },
+          },
+          {
+            name: '高德',
+            crs: L.CRS.EPSG3857,
+            zoom: 16,
+            maps: {
+              'st6': L.tileLayer('//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', { tms: false, subdomains: [ '1', '2', '3', '4', ], }),
+              'st7': L.tileLayer('//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', { tms: false, subdomains: [ '1', '2', '3', '4', ], }),
+              'rd7': L.tileLayer('//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', { tms: false, subdomains: [ '1', '2', '3', '4', ], }),
+              'rd8': L.tileLayer('//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', { tms: false, subdomains: [ '1', '2', '3', '4', ], }),
+            },
+            layers: {
+              '标签': L.tileLayer('//webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', { tms: false, subdomains: [ '1', '2', '3', '4', ], }),
+            },
+          },
+          {
+            name: '公司',
+            crs: L.CRS.EPSG3857,
+            zoom: 16,
             tms: false,
-            subdomains: '0123',
-            maps: [
-              { name: '卫星①', zIndex: 1, opacity: 1.0, visible: true, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '卫星②', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', },
-              { name: '标卫①', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '标卫②', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}', },
-              { name: '标地①', zIndex: 5, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '线路①', zIndex: 6, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '线路②', zIndex: 7, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', },
-              { name: '地形①', zIndex: 9, opacity: 0.5, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '标签①', zIndex: 8, opacity: 1.0, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-            ],
-            layers: [
-            ],
+            subdomains: [],
+            maps: {
+              '卫星': L.tileLayer('http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png', { tms: false, }),
+              '线路': L.tileLayer('http://tile.keepourfaith.com:8380/tile/street/{z}/{x}/{y}.png', { tms: false, }),
+            },
           },
         ],
-        zoom: 16,
+        zoom: 15,
         minZoom: 2,
         maxZoom: 18,
-        center: L.latLng(39.911424, 116.400221),
+        center: L.latLng(39.59930651, 118.49209785),
         options: {
           attributionControl: false,
           zoomControl: false,
           animate: true,
         },
       },
+      mapLayerGroups: null,
       moveMarker: null,
       moveMarkerClassName: '',
       markerIconOptions: {},
@@ -481,15 +391,10 @@ export default {
       ],
       playerFlv: null,
       playerJs: null,
+      mapObj: null,
     }
   },
   methods: {
-    zoomEnd (e) {
-      this.comboboxVal = e.target.getZoom()
-    },
-    setZoom () {
-      this.$refs.map.mapObject.setZoom(this.comboboxVal)
-    },
     makeMarkerObj (count) {
       let lngEx = 0.0
       let latEx = 0.5
@@ -548,12 +453,34 @@ export default {
       this.makeMarkerObj(73)
       this.createMarkerIcon(this.markers)
     },
+    leafletEx () {
+      this.layerChange(this.mapUrlIndex)
+    },
+    layerChange (index) {
+      if (this.mapObj) {
+        this.mapObj.remove()
+      }
+      const mapType = this.mapControl.tiles[index]
+      this.mapObj = L.map('map', {
+        center: [ 39.911424, 116.400221, ],
+        zoom: mapType.zoom,
+        crs: mapType.crs,
+        layers: [ Object.values(mapType.maps)[0], ].concat(Object.values(this.mapLayerGroups)),
+      })
+      // 添加底图
+      L.control.layers(mapType.maps || {}, Object.assign(mapType.layers || {}, this.mapLayerGroups)).addTo(this.mapObj)
+    },
     createMarkerIcon (markersGroup) {
+      const mapLayerGroups = {}
       markersGroup.forEach(group => {
-        group.children.forEach(marker => {
-          marker.icon = new L.DivIcon(this.markerIconOptions[group.type][marker.status].markerOption)
+        if (!mapLayerGroups.hasOwnProperty(group.type)) {
+          mapLayerGroups[group.type] = L.layerGroup([])
+        }
+        group.children.forEach(markerObj => {
+          mapLayerGroups[group.type].addLayer(L.marker([ markerObj.lat, markerObj.lng, ], { icon: new L.DivIcon(this.markerIconOptions[group.type][markerObj.status].markerOption), }))
         })
       })
+      this.mapLayerGroups = mapLayerGroups
     },
     createClusterOptions (clusterIconOptions) {
       return {
