@@ -92,10 +92,23 @@
       <baidu-map
         id="map"
         style="width: 100%;height: 95%; margin: 0 auto"
+        :zoom="mapControl.zoom"
+        :center="mapControl.center"
         :scroll-wheel-zoom="true"
         :mapStyle="mapStyle"
         @ready="mapReady"
       >
+        <bm-map-type :map-types="['BMAP_NORMAL_MAP', 'BMAP_HYBRID_MAP']" anchor="BMAP_ANCHOR_TOP_LEFT"></bm-map-type>
+        <bm-geolocation anchor="BMAP_ANCHOR_BOTTOM_LEFT" :showAddressBar="true" :autoLocation="true" />
+        <bm-local-search :keyword="comboboxVal" :auto-viewport="true"></bm-local-search>
+<!--        <bm-transit start="腾讯大厦" end="壹品天城" :auto-viewport="true" location="大连"></bm-transit>-->
+        <bm-boundary name="滦州市" :strokeWeight="2" strokeColor="blue"></bm-boundary>
+        <bm-control :offset="{width: '10px', height: '10px'}">
+          <bm-auto-complete v-model="comboboxVal" :sugStyle="{zIndex: 100}">
+            <search-field placeholder="请输入地名关键字"></search-field> <!-- 这里指代一个自定义搜索框组件 -->
+          </bm-auto-complete>
+        </bm-control>
+        <bm-local-search :keyword="comboboxVal" :auto-viewport="true" ></bm-local-search>
         <bm-marker
           v-for="marker in markers[2].children"
           :key="marker.name"
@@ -431,7 +444,7 @@ export default {
         zoom: 16,
         minZoom: 2,
         maxZoom: 18,
-        center: L.latLng(39.911424, 116.400221),
+        center: { lat: 39.911424, lng: 116.400221, },
         options: {
           attributionControl: false,
           zoomControl: false,
@@ -440,15 +453,15 @@ export default {
       },
       mapLocal: null,
       mapStyle: {
-        styleJson: [
-          {
-            featureType: 'water',
-            elementType: 'geometry',
-            stylers: {
-              color: '#20ab6a',
-            },
-          },
-        ],
+        // styleJson: [
+        //   {
+        //     featureType: 'water',
+        //     elementType: 'geometry',
+        //     stylers: {
+        //       color: '#20ab6a',
+        //     },
+        //   },
+        // ],
       },
       point: '',
       moveMarker: null,
@@ -516,8 +529,8 @@ export default {
     mapReady ({ BMap, map, }) {
       const self = this
       // 选择一个经纬度作为中心点
-      self.point = new BMap.Point(116.400221, 39.911424)
-      map.centerAndZoom(self.point, 16)
+      // self.point = new BMap.Point(116.400221, 39.911424)
+      // map.centerAndZoom(self.point, 16)
 
       self.mapLocal = new BMap.LocalSearch(map, { // 智能搜索
         onSearchComplete: self.mapSearchComplete,
