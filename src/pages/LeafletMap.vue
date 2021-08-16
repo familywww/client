@@ -17,7 +17,8 @@
         :options.sync="mapControl.options"
         @move="zoomEnd"
       >
-        <l-control-layers :sortLayers="true" />
+        <l-control-scale position="topleft" :imperial="false" :metric="true" />
+        <l-control-layers position="topleft" :sortLayers="false" />
         <l-tile-layer
           v-for="layer in mapControl.tile[mapUrlIndex].maps"
           :key="layer.name"
@@ -88,7 +89,7 @@
         ></l-polyline>
       </l-map>
     </div>
-    <v-card max-width="220" style="z-index:900;position: absolute;top:45px;right:500px; background: #2b3575a8">
+    <v-card max-width="220" style="z-index:900;position: absolute;top:47px;right:500px; background: #2b3575a8">
       <v-card-title>
         <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
         <v-icon color="#00c421" @click="setZoom">mdi-home-group</v-icon>
@@ -99,7 +100,7 @@
         <v-icon color="#00c5f5">mdi-tractor</v-icon>
         <v-icon color="#00c5f5">mdi-briefcase-variant</v-icon>
       </v-card-title>
-      <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="965px" style="background: #ffffff00">
+      <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="920px" style="background: #ffffff00">
         <v-list-group
           sub-group
           style="margin: 0px 0px 0px -20px"
@@ -301,7 +302,8 @@ export default {
   name: 'mapTest',
   components: {
     'l-map': Vue2Leaflet.LMap,
-    'LControlLayers': Vue2Leaflet.LControlLayers,
+    'l-control-layers': Vue2Leaflet.LControlLayers,
+    'l-control-scale': Vue2Leaflet.LControlScale,
     'l-tile-layer': Vue2Leaflet.LTileLayer,
     // 'l-wms-tile-layer': Vue2Leaflet.LWMSTileLayer,
     'l-polyline': Vue2Leaflet.LPolyline,

@@ -7,88 +7,114 @@
           {{ subItem.name }}
         </v-tab>
       </v-tabs>
-      <l-map
-        ref="map"
-        :zoom.sync="mapControl.zoom"
-        :center.sync="mapControl.center"
-        :min-zoom="mapControl.minZoom"
-        :max-zoom="mapControl.maxZoom"
-        :crs="mapControl.tile[mapUrlIndex].crs"
-        tileLayer.chinaProvider="Google.Normal.Map"
-        :options.sync="mapControl.options"
+<!--      <l-map-->
+<!--        ref="map"-->
+<!--        :zoom.sync="mapControl.zoom"-->
+<!--        :center.sync="mapControl.center"-->
+<!--        :min-zoom="mapControl.minZoom"-->
+<!--        :max-zoom="mapControl.maxZoom"-->
+<!--        :crs="mapControl.tile[mapUrlIndex].crs"-->
+<!--        :options.sync="mapControl.options"-->
+<!--        @move="zoomEnd"-->
+<!--      >-->
+<!--        <l-control-scale position="topleft" :imperial="false" :metric="true"></l-control-scale>-->
+<!--        <l-control-layers position="topleft" :sortLayers="false" left="20" />-->
+<!--        <l-tile-layer-->
+<!--          v-for="layer in mapControl.tile[mapUrlIndex].maps"-->
+<!--          :key="layer.name"-->
+<!--          :name="layer.name"-->
+<!--          :visible="layer.visible"-->
+<!--          :url="layer.url"-->
+<!--          :options="{tms: mapControl.tile[mapUrlIndex].tms, zIndex: layer.zIndex, opacity: layer.opacity}"-->
+<!--          :subdomains="mapControl.tile[mapUrlIndex].subdomains"-->
+<!--          :layer-type="layer.type"-->
+<!--        />-->
+
+<!--        <div-->
+<!--          v-for="group in markers.filter(item => { return item.type === 'point'})"-->
+<!--          :key="group.id"-->
+<!--        >-->
+<!--          <l-marker-->
+<!--            ref="points"-->
+<!--            v-for="marker in group.children"-->
+<!--            :key="'mark-' + marker.id"-->
+<!--            :id="marker.id"-->
+<!--            :lat-lng="marker"-->
+<!--            :draggable="false"-->
+<!--            :icon="marker.icon"-->
+<!--            @mousedown="cameraCursorShow(marker)"-->
+<!--          >-->
+<!--            <l-tooltip :options="{ direction: 'bottom', interactice: true, }">-->
+<!--              <span>{{ marker.videoItem ? marker.videoItem.src : marker.status }}</span>-->
+<!--            </l-tooltip>-->
+<!--          </l-marker>-->
+<!--        </div>-->
+<!--        <div-->
+<!--          v-for="(optValue, optKey) in markerIconOptions"-->
+<!--          :key="optKey"-->
+<!--        >-->
+<!--          <l-marker-cluster-->
+<!--            v-for="(typeValue, typeKey) in optValue"-->
+<!--            :key="typeKey"-->
+<!--            :options="createClusterOptions(typeValue.clusterOption)"-->
+<!--          >-->
+<!--            <div-->
+<!--              v-for="markGroup in markers.filter(item => { return item.type !== 'point' && item.type === optKey})"-->
+<!--              :key="'markGroup-' + markGroup.groupId"-->
+<!--              :id="markGroup.groupId"-->
+<!--            >-->
+<!--              <l-marker-->
+<!--                ref="points"-->
+<!--                v-for="marker in markGroup.children.filter(item => { return item.status === typeKey })"-->
+<!--                :key="'mark-' + marker.id"-->
+<!--                :id="marker.id"-->
+<!--                :lat-lng="marker"-->
+<!--                :draggable="false"-->
+<!--                :icon="marker.icon"-->
+<!--                @mousedown="cameraCursorShow(marker)"-->
+<!--              >-->
+<!--                <l-tooltip :options="{ direction: 'bottom', interactice: true, }">-->
+<!--                  <span>{{ marker.videoItem ? marker.videoItem.name : (marker.lng + ':' + marker.lat) }}</span>-->
+<!--                </l-tooltip>-->
+<!--              </l-marker>-->
+<!--            </div>-->
+<!--          </l-marker-cluster>-->
+<!--        </div>-->
+<!--        <l-polyline-->
+<!--          v-for="item in markers.filter(group => { return group.type === 'point'})"-->
+<!--          :key="item.id"-->
+<!--          :lat-lngs="item.children"-->
+<!--          :weight="3"-->
+<!--          :color="'#fffb11'"-->
+<!--        ></l-polyline>-->
+<!--      </l-map>-->
+
+      <baidu-map
+        id="map"
+        style="width: 100%;height: 95%; margin: 0 auto"
+        :scroll-wheel-zoom="true"
+        :mapStyle="mapStyle"
+        @ready="mapReady"
       >
-        <l-tile-layer :url="mapControl.tile[mapUrlIndex].url" layer-type="base" :options="mapControl.tile[mapUrlIndex]" />
-        <div
-          v-for="group in markers.filter(item => { return item.type === 'point'})"
-          :key="group.id"
-        >
-          <l-marker
-            ref="points"
-            v-for="marker in group.children"
-            :key="'mark-' + marker.id"
-            :id="marker.id"
-            :lat-lng="marker"
-            :draggable="false"
-            :icon="marker.icon"
-            @mousedown="cameraCursorShow(marker)"
-          >
-            <l-tooltip :options="{ direction: 'bottom', interactice: true, }">
-              <span>{{ marker.videoItem ? marker.videoItem.src : marker.status }}</span>
-            </l-tooltip>
-          </l-marker>
-        </div>
-        <div
-          v-for="(optValue, optKey) in markerIconOptions"
-          :key="optKey"
-        >
-          <l-marker-cluster
-            v-for="(typeValue, typeKey) in optValue"
-            :key="typeKey"
-            :options="createClusterOptions(typeValue.clusterOption)"
-          >
-            <div
-              v-for="markGroup in markers.filter(item => { return item.type !== 'point' && item.type === optKey})"
-              :key="'markGroup-' + markGroup.groupId"
-              :id="markGroup.groupId"
-            >
-              <l-marker
-                ref="points"
-                v-for="marker in markGroup.children.filter(item => { return item.status === typeKey })"
-                :key="'mark-' + marker.id"
-                :id="marker.id"
-                :lat-lng="marker"
-                :draggable="false"
-                :icon="marker.icon"
-                @mousedown="cameraCursorShow(marker)"
-              >
-                <l-tooltip :options="{ direction: 'bottom', interactice: true, }">
-                  <span>{{ marker.videoItem ? marker.videoItem.name : (marker.lng + ':' + marker.lat) }}</span>
-                </l-tooltip>
-              </l-marker>
-            </div>
-          </l-marker-cluster>
-        </div>
-        <l-polyline
-          v-for="item in markers.filter(group => { return group.type === 'point'})"
-          :key="item.id"
-          :lat-lngs="item.children"
-          :weight="3"
-          :color="'#fffb11'"
-        ></l-polyline>
-      </l-map>
+        <bm-marker
+          v-for="marker in markers[2].children"
+          :key="marker.name"
+          :position.sync="marker"
+        />
+      </baidu-map>
     </div>
-    <v-card max-width="220" style="z-index:900;position: absolute;top:45px;right:500px; background: #2b3575a8">
+    <v-card max-width="220" style="z-index:900;position: absolute;top:47px;right:500px; background: #2b3575a8">
       <v-card-title>
         <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
-        <v-icon color="#00c421">mdi-home-group</v-icon>
-        <v-icon color="#f44a00">mdi-layers-triple</v-icon>
-        <v-icon color="#eb9201">mdi-traffic-light</v-icon>
+        <v-icon color="#00c421" @click="setZoom(1)">mdi-home-group</v-icon>
+        <v-icon color="#f44a00" @click="setZoom(-1)">mdi-layers-triple</v-icon>
+        <v-icon color="#eb9201" @click="mapSearch()">mdi-traffic-light</v-icon>
         <v-icon color="#fe2954">mdi-hydro-power</v-icon>
         <v-icon color="#44b900">mdi-leaf</v-icon>
         <v-icon color="#00c5f5">mdi-tractor</v-icon>
         <v-icon color="#00c5f5">mdi-briefcase-variant</v-icon>
       </v-card-title>
-      <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="965px" style="background: #ffffff00">
+      <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="920px" style="background: #ffffff00">
         <v-list-group
           sub-group
           style="margin: 0px 0px 0px -20px"
@@ -163,9 +189,6 @@ import videoJs from 'video.js'
 import 'video.js/dist/video-js.css'
 import flv from 'flv.js'
 import 'videojs-flvjs'
-import '../plugins/leaflet.ChineseTmsProviders'
-import '../plugins/leaflet.mapCorrection'
-
 const allVideoItem = [
   { type: 'application/x-mpegURL', name: '全国风景总览', src: 'https://gcalic.v.myalicdn.com/gc/wgw05_1/index.m3u8', },
   { type: 'application/x-mpegURL', name: '黟县宏村月沼', src: 'https://gctxyc.liveplay.myqcloud.com/gc/yxhcyz_1/index.m3u8', },
@@ -293,21 +316,16 @@ export default {
   name: 'mapTest',
   components: {
     'l-map': Vue2Leaflet.LMap,
+    'l-control-layers': Vue2Leaflet.LControlLayers,
+    'l-control-scale': Vue2Leaflet.LControlScale,
     'l-tile-layer': Vue2Leaflet.LTileLayer,
+    // 'l-wms-tile-layer': Vue2Leaflet.LWMSTileLayer,
     'l-polyline': Vue2Leaflet.LPolyline,
     // 'l-polygon': Vue2Leaflet.LPolygon,
     'l-marker': Vue2Leaflet.LMarker,
     'l-tooltip': Vue2Leaflet.LTooltip,
     // 'l-circle': Vue2Leaflet.LCircle,
     'l-marker-cluster': vueLeafletMarkerCluster,
-  },
-  watch: {
-    // nowZoom: {
-    //   handler (now, old) {
-    //     console.log('now:', now)
-    //     console.log('old:', old)
-    //   },
-    // },
   },
   created () {
     this.init()
@@ -340,40 +358,99 @@ export default {
   },
   data () {
     return {
-      comboboxItems: [ 1, 2, 3, 4, ],
-      comboboxVal: '',
+      comboboxItems: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, ],
+      comboboxVal: 0,
       scrollInvoked: 0,
       mapUrlIndex: 0,
       mapControl: {
         tile: [
-          { name: '公司实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/satellite/{z}/{x}/{y}.png', },
-          { name: '公司街景', crs: L.CRS.EPSG3857, tms: false, url: 'http://tile.keepourfaith.com:8380/tile/street/{z}/{x}/{y}.png', },
-          // { name: '谷歌标签', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          // { name: '谷歌地形', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          // { name: '谷歌卫星', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          // { name: '谷歌线路', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌标卫', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt0.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '谷歌标地', crs: L.CRS.EPSG3857, tms: false, url: 'http://mt3.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-          { name: '高德实景', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
-          { name: '高德街①', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-          { name: '高德街②', crs: L.CRS.EPSG3857, tms: false, url: 'http://webst02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
-          { name: '高德街③', crs: L.CRS.EPSG3857, tms: false, url: 'http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
-          { name: '百度实景', crs: L.CRS.Baidu, tms: true, url: 'https://maponline2.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
-          { name: '谷歌街景', crs: L.CRS.EPSG3857, tms: true, url: 'http://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', },
-          { name: '百度街景', crs: L.CRS.Baidu, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
-          { name: '百度街②', crs: L.CRS.Baidu, tms: true, url: 'http://online1.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
+          {
+            name: '高德',
+            crs: L.CRS.EPSG3857,
+            tms: false,
+            subdomains: '1234',
+            maps: [
+              { name: 'st6', zIndex: 1, opacity: 1.0, visible: false, type: 'base', url: '//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=6&x={x}&y={y}&z={z}', },
+              { name: 'st7', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+              { name: 'rd7', zIndex: 3, opacity: 1.0, visible: true, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
+              { name: 'rd8', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
+              { name: '标签', zIndex: 5, opacity: 1.0, visible: false, type: 'overlay', url: '//webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', },
+            ],
+            layers: [
+            ],
+          },
+          {
+            name: '百度',
+            crs: L.CRS.Baidu(true),
+            tms: true,
+            subdomains: '0123456789',
+            maps: [
+              { name: '卫星', zIndex: 1, opacity: 1.0, visible: false, type: 'base', url: 'https://maponline{s}.bdimg.com/starpic/?qt=satepc&u=x={x};y={y};z={z};v=009;type=sate&fm=46&app=webearth2&v=009&udt=20210803', },
+              { name: '街景', zIndex: 2, opacity: 1.0, visible: true, type: 'base', url: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=ph&udt=20210803', },
+              { name: '街②', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: 'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1', },
+              { name: '标签', zIndex: 4, opacity: 1.0, visible: false, type: 'overlay', url: 'http://online{s}.map.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&styles=sl&v=020', },
+            ],
+            layers: [
+            ],
+          },
+          {
+            name: 'Geoq',
+            crs: L.CRS.EPSG3857,
+            tms: false,
+            subdomains: 'abc',
+            maps: [
+              { name: 'map', zIndex: 1, opacity: 1.0, visible: true, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}', },
+              { name: 'PurplishBlue', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}', },
+              { name: 'Gray', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetGray/MapServer/tile/{z}/{y}/{x}', },
+              { name: 'Warm', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetWarm/MapServer/tile/{z}/{y}/{x}', },
+              { name: 'Hydro', zIndex: 5, opacity: 1.0, visible: false, type: 'overlay', url: '//thematic.geoq.cn/arcgis/rest/services/ThematicMaps/WorldHydroMap/MapServer/tile/{z}/{y}/{x}', },
+            ],
+            layers: [
+            ],
+          },
+          {
+            name: '谷歌',
+            crs: L.CRS.EPSG3857,
+            tms: false,
+            subdomains: '0123',
+            maps: [
+              { name: '卫星①', zIndex: 1, opacity: 1.0, visible: true, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=s&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '卫星②', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', },
+              { name: '标卫①', zIndex: 3, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=y&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '标卫②', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}', },
+              { name: '标地①', zIndex: 5, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '线路①', zIndex: 6, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '线路②', zIndex: 7, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', },
+              { name: '地形①', zIndex: 9, opacity: 0.5, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '标签①', zIndex: 8, opacity: 1.0, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+            ],
+            layers: [
+            ],
+          },
         ],
-        zoom: 15,
+        zoom: 16,
         minZoom: 2,
         maxZoom: 18,
-        // center: L.latLng(39.59930651, 118.49209785),
-        center: L.latLng(39.914853, 116.403901),
+        center: L.latLng(39.911424, 116.400221),
         options: {
           attributionControl: false,
           zoomControl: false,
           animate: true,
         },
       },
+      mapLocal: null,
+      mapStyle: {
+        styleJson: [
+          {
+            featureType: 'water',
+            elementType: 'geometry',
+            stylers: {
+              color: '#20ab6a',
+            },
+          },
+        ],
+      },
+      point: '',
       moveMarker: null,
       moveMarkerClassName: '',
       markerIconOptions: {},
@@ -422,8 +499,12 @@ export default {
           name: '北京',
           type: 'point',
           children: [
-            { id: 'a', lng: 116.4039640000000, lat: 39.91509900000000, status: 's_01', },
-            { id: 'b', lng: 116.3972280000000, lat: 39.90960400000000, status: 's_02', },
+            { id: '百度天安门城楼', lng: 116.403964, lat: 39.915099, status: 's_01', },
+            { id: '百度     国旗', lng: 116.403931, lat: 39.913260, status: 's_01', },
+            { id: '百度英雄纪念碑', lng: 116.404169, lat: 39.910955, status: 's_01', },
+            { id: '谷歌天安门城楼', lng: 116.397469, lat: 39.908734, status: 's_04', },
+            { id: '谷歌     国旗', lng: 116.397555, lat: 39.906973, status: 's_04', },
+            { id: '谷歌英雄纪念碑', lng: 116.397716, lat: 39.904606, status: 's_04', },
           ],
         },
       ],
@@ -432,6 +513,28 @@ export default {
     }
   },
   methods: {
+    mapReady ({ BMap, map, }) {
+      const self = this
+      // 选择一个经纬度作为中心点
+      self.point = new BMap.Point(116.400221, 39.911424)
+      map.centerAndZoom(self.point, 16)
+
+      self.mapLocal = new BMap.LocalSearch(map, { // 智能搜索
+        onSearchComplete: self.mapSearchComplete,
+      })
+    },
+    mapSearch (tar) {
+      this.mapLocal.search(this.comboboxVal)
+    },
+    mapSearchComplete () {
+      console.log(this.mapLocal.getResults().Hr)
+    },
+    zoomEnd (e) {
+      this.comboboxVal = e.target.getZoom()
+    },
+    setZoom (l) {
+      this.$refs.map.mapObject.setZoom(this.$refs.map.mapObject.getZoom() + l)
+    },
     makeMarkerObj (count) {
       let lngEx = 0.0
       let latEx = 0.5
@@ -467,24 +570,6 @@ export default {
       this.scrollInvoked++
     },
     init () {
-      L.CRS.Baidu = new L.Proj.CRS(
-        'EPSG:900913',
-        '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs',
-        {
-          resolutions: (function () {
-            const level = 19
-            let res = []
-            res[0] = Math.pow(2, 18)
-            for (let i = 1; i < level; i++) {
-              res[i] = Math.pow(2, (18 - i))
-            }
-            return res
-          }()),
-          origin: [ 0, 0, ],
-          bounds: L.bounds([ 20037508.342789244, 0, ], [ 0, 20037508.342789244, ]),
-        }
-      )
-      // this.leafletEx()
       for (let type in iconSetting) {
         this.markerIconOptions[type] = {}
         for (let status in iconSetting[type]) {
@@ -507,156 +592,6 @@ export default {
       }
       this.makeMarkerObj(73)
       this.createMarkerIcon(this.markers)
-    },
-    leafletEx () {
-      L.coordConver = function () {
-        return new L.CoordConver()
-      }
-      L.CoordConver = function () {
-        /** 百度转84 */
-        this.bd09_To_gps84 = function (lng, lat) {
-          const gcj02 = this.bd09_To_gcj02(lng, lat)
-          const map84 = this.gcj02_To_gps84(gcj02.lng, gcj02.lat)
-          return map84
-        }
-        /** 84转百度 */
-        this.gps84_To_bd09 = function (lng, lat) {
-          const gcj02 = this.gps84_To_gcj02(lng, lat)
-          const bd09 = this.gcj02_To_bd09(gcj02.lng, gcj02.lat)
-          return bd09
-        }
-        /** 84转火星 */
-        this.gps84_To_gcj02 = function (lng, lat) {
-          let dLat = transformLat(lng - 105.0, lat - 35.0)
-          let dLng = transformLng(lng - 105.0, lat - 35.0)
-          let radLat = lat / 180.0 * pi
-          let magic = Math.sin(radLat)
-          magic = 1 - ee * magic * magic
-          const sqrtMagic = Math.sqrt(magic)
-          dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi)
-          dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi)
-          const mgLat = lat + dLat
-          const mgLng = lng + dLng
-          const newCoord = {
-            lng: mgLng,
-            lat: mgLat,
-          }
-          return newCoord
-        }
-        /** 火星转84 */
-        this.gcj02_To_gps84 = function (lng, lat) {
-          const coord = transform(lng, lat)
-          const lontitude = lng * 2 - coord.lng
-          const latitude = lat * 2 - coord.lat
-          const newCoord = {
-            lng: lontitude,
-            lat: latitude,
-          }
-          return newCoord
-        }
-        /** 火星转百度 */
-        this.gcj02_To_bd09 = function (x, y) {
-          const z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * xPi)
-          const theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * xPi)
-          const bdLng = z * Math.cos(theta) + 0.0065
-          const bdLat = z * Math.sin(theta) + 0.006
-          const newCoord = {
-            lng: bdLng,
-            lat: bdLat,
-          }
-          return newCoord
-        }
-        /** 百度转火星 */
-        this.bd09_To_gcj02 = function (bdLng, bdLat) {
-          const x = bdLng - 0.0065
-          const y = bdLat - 0.006
-          const z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * xPi)
-          const theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * xPi)
-          const ggLng = z * Math.cos(theta)
-          const ggLat = z * Math.sin(theta)
-          const newCoord = {
-            lng: ggLng,
-            lat: ggLat,
-          }
-          return newCoord
-        }
-
-        const pi = 3.1415926535897932384626
-        const a = 6378245.0
-        const ee = 0.00669342162296594323
-        const xPi = pi * 3000.0 / 180.0
-        // const R = 6378137
-
-        function transform (lng, lat) {
-          let dLat = transformLat(lng - 105.0, lat - 35.0)
-          let dLng = transformLng(lng - 105.0, lat - 35.0)
-          let radLat = lat / 180.0 * pi
-          let magic = Math.sin(radLat)
-          magic = 1 - ee * magic * magic
-          const sqrtMagic = Math.sqrt(magic)
-          dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi)
-          dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi)
-          const mgLat = lat + dLat
-          const mgLng = lng + dLng
-          const newCoord = {
-            lng: mgLng,
-            lat: mgLat,
-          }
-          return newCoord
-        }
-
-        function transformLat (x, y) {
-          let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x))
-          ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0
-          ret += (20.0 * Math.sin(y * pi) + 40.0 * Math.sin(y / 3.0 * pi)) * 2.0 / 3.0
-          ret += (160.0 * Math.sin(y / 12.0 * pi) + 320 * Math.sin(y * pi / 30.0)) * 2.0 / 3.0
-          return ret
-        }
-
-        function transformLng (x, y) {
-          let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x))
-          ret += (20.0 * Math.sin(6.0 * x * pi) + 20.0 * Math.sin(2.0 * x * pi)) * 2.0 / 3.0
-          ret += (20.0 * Math.sin(x * pi) + 40.0 * Math.sin(x / 3.0 * pi)) * 2.0 / 3.0
-          ret += (150.0 * Math.sin(x / 12.0 * pi) + 300.0 * Math.sin(x / 30.0 * pi)) * 2.0 / 3.0
-          return ret
-        }
-      }
-      L.GridLayer.include({
-        _setZoomTransform: function (level, _center, zoom) {
-          let center = _center
-          if (center !== undefined && this.options) {
-            if (this.options.name === '百度街景') {
-              center = L.coordConver().gcj02_To_bd09(_center.lng, _center.lat)
-            } else {
-            }
-          }
-          const scale = this._map.getZoomScale(zoom, level.zoom)
-          const translate = level.origin.multiplyBy(scale)
-            .subtract(this._map._getNewPixelOrigin(center, zoom)).round()
-
-          if (L.Browser.any3d) {
-            L.DomUtil.setTransform(level.el, translate, scale)
-          } else {
-            L.DomUtil.setPosition(level.el, translate)
-          }
-        },
-        _getTiledPixelBounds: function (_center) {
-          let center = _center
-          if (center !== undefined && this.options) {
-            if (this.options.name === '百度街景') {
-              center = L.coordConver().gcj02_To_bd09(_center.lng, _center.lat)
-            } else {
-            }
-          }
-          const map = this._map
-          const mapZoom = map._animatingZoom ? Math.max(map._animateToZoom, map.getZoom()) : map.getZoom()
-          const scale = map.getZoomScale(mapZoom, this._tileZoom)
-          const pixelCenter = map.project(center, this._tileZoom).floor()
-          const halfSize = map.getSize().divideBy(scale * 2)
-
-          return new L.Bounds(pixelCenter.subtract(halfSize), pixelCenter.add(halfSize))
-        },
-      })
     },
     createMarkerIcon (markersGroup) {
       markersGroup.forEach(group => {
