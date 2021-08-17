@@ -19,6 +19,19 @@ L.CRS.Baidu = function (useGCJ02) {
       bounds: L.bounds([ 20037508.342789244, 0, ], [ 0, 20037508.342789244, ]),
     },
   )
+  result.scale = function (zoom) {
+    const iZoom = Math.floor(zoom)
+    if (zoom === iZoom) {
+      return this._scales[zoom]
+    } else {
+      // Non-integer zoom, interpolate
+      const baseScale = this._scales[iZoom]
+      const nextScale = this._scales[iZoom + 1]
+      const scaleDiff = nextScale - baseScale
+      const zDiff = (zoom - iZoom)
+      return baseScale + scaleDiff * zDiff
+    }
+  }
   result.zoom = function (scale) {
     // Find closest number in this._scales, down
     const downScale = this._closestElement(this._scales, scale)
@@ -31,22 +44,16 @@ L.CRS.Baidu = function (useGCJ02) {
       return -Infinity
     }
     // Interpolate
-    let nextZoom = downZoom + 1
-    let nextScale = this._scales[nextZoom]
+    const nextZoom = downZoom + 1
+    const nextScale = this._scales[nextZoom]
     if (nextScale === undefined) {
       return Infinity
     }
-    // const scaleDiff = nextScale - downScale
-    // return (scale - downScale) / scaleDiff + downZoom
-    if (nextScale - scale > scale - downScale) {
-      return downZoom
-    } else {
-      return nextZoom
-    }
+    const scaleDiff = nextScale - downScale
+    return (scale - downScale) / scaleDiff + downZoom
   }
   return result
 }
-
 /**
  * 可将Material Design Icons等字体图标或文字转换成leaflet可用的地图图标
  * @module createDivOption
