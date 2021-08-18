@@ -23,7 +23,17 @@ L.CRS.Baidu = function (useGCJ02, useScaleZoom) {
     result.zoom = function (scale) {
       let downScale2, downZoom2, scaleDiff2
       // OverRide proj4 scale
-      downZoom2 = this._scales.findIndex(s => { return Math.min(s, scale) === scale })
+      const maxZoom = downZoom2 = this._scales.length - 1
+      for (let i = maxZoom; i >= 0; i--) {
+        if (this._scales[i] < scale) {
+          break
+        }
+        downZoom2 = i
+      }
+
+      if (downZoom2 === maxZoom) {
+        return downZoom2
+      }
       downScale2 = this._scales[downZoom2]
       // Check if scale is downScale => return array index
       if (scale === downScale2) {

@@ -424,8 +424,10 @@ export default {
               { name: '标地①', zIndex: 5, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=p&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
               { name: '线路①', zIndex: 6, opacity: 1.0, visible: false, type: 'base', url: '//mt{s}.google.cn/vt/lyrs=m&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
               { name: '线路②', zIndex: 7, opacity: 1.0, visible: false, type: 'base', url: '//www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}', },
-              { name: '地形①', zIndex: 9, opacity: 0.5, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
-              { name: '标签①', zIndex: 8, opacity: 1.0, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '内网①', zIndex: 8, opacity: 1.0, visible: false, type: 'base', url: '//192.168.1.55:3002/tile/satellite/{z}/{x}/{y}.png', },
+              { name: '内网②', zIndex: 9, opacity: 1.0, visible: false, type: 'base', url: '//192.168.1.55:3002/tile/street/{z}/{x}/{y}.png', },
+              { name: '地形①', zIndex: 98, opacity: 0.5, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=t&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
+              { name: '标签①', zIndex: 99, opacity: 1.0, visible: false, type: 'overlay', url: '//mt{s}.google.cn/vt/lyrs=h&hl=zh-CN&gl=cn&x={x}&y={y}&z={z}&s=Galil', },
             ],
             layers: [
             ],
@@ -438,7 +440,8 @@ export default {
         options: {
           attributionControl: false,
           zoomControl: false,
-          zoomAnimate: false,
+          zoomAnimate: true,
+          fadeAnimation: false,
         },
       },
       moveMarker: null,
