@@ -1,7 +1,7 @@
 import L from 'leaflet'
 import 'proj4'
 import 'proj4leaflet'
-L.CRS.Baidu = function (useGCJ02) {
+L.CRS.Baidu = function (useGCJ02, useScaleZoom) {
   let desc = useGCJ02
     ? '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=710 +y_0=910 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs'
     : '+proj=merc +a=6378206 +b=6356584.314245179 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs'
@@ -19,41 +19,32 @@ L.CRS.Baidu = function (useGCJ02) {
       bounds: L.bounds([ 20037508.342789244, 0, ], [ 0, 20037508.342789244, ]),
     },
   )
-  result.scale = function (zoom) {
-    const iZoom = Math.floor(zoom)
-    if (zoom === iZoom) {
-      return this._scales[zoom]
-    } else {
-      // Non-integer zoom, interpolate
-      const baseScale = this._scales[iZoom]
-      const nextScale = this._scales[iZoom + 1]
-      const scaleDiff = nextScale - baseScale
-      const zDiff = (zoom - iZoom)
-      return baseScale + scaleDiff * zDiff
+  if (useScaleZoom) {
+    result.zoom = function (scale) {
+      let downScale2, downZoom2, scaleDiff2
+      // OverRide proj4 scale
+      downZoom2 = this._scales.findIndex(s => { return Math.min(s, scale) === scale })
+      downScale2 = this._scales[downZoom2]
+      // Check if scale is downScale => return array index
+      if (scale === downScale2) {
+        return downZoom2
+      }
+      if (downScale2 === undefined) {
+        return -Infinity
+      }
+      // Interpolate
+      const preZoom = downZoom2 - 1
+      const preScale = this._scales[preZoom]
+      if (preScale === undefined) {
+        return Infinity
+      }
+      scaleDiff2 = downScale2 - preScale
+      return (scale - preScale) / scaleDiff2 + downZoom2
     }
-  }
-  result.zoom = function (scale) {
-    // Find closest number in this._scales, down
-    const downScale = this._closestElement(this._scales, scale)
-    let downZoom = this._scales.indexOf(downScale)
-    // Check if scale is downScale => return array index
-    if (scale === downScale) {
-      return downZoom
-    }
-    if (downScale === undefined) {
-      return -Infinity
-    }
-    // Interpolate
-    const nextZoom = downZoom + 1
-    const nextScale = this._scales[nextZoom]
-    if (nextScale === undefined) {
-      return Infinity
-    }
-    const scaleDiff = nextScale - downScale
-    return (scale - downScale) / scaleDiff + downZoom
   }
   return result
 }
+
 /**
  * 可将Material Design Icons等字体图标或文字转换成leaflet可用的地图图标
  * @module createDivOption
@@ -257,5 +248,45 @@ L.DivIconPresetOption = function (index, name) {
   }
   return name ? result.Name(name) : result
 }
+
+// L.GridLayer.include({
+//   _setZoomTransform: function (level, _center, zoom) {
+//     console.log('1', this._map.options.crs.code)
+//     let center = _center
+//     // if (center !== undefined && this.options) {
+//     //   if (this.options.corrdType === 'gcj02') {
+//     //     center = L.coordConver().gps84_To_gcj02(_center.lng, _center.lat)
+//     //   } else if (this.options.corrdType === 'bd09') {
+//     //     center = L.coordConver().gps84_To_bd09(_center.lng, _center.lat)
+//     //   }
+//     // }
+//     const scale = this._map.getZoomScale(zoom, level.zoom)
+//     const translate = level.origin.multiplyBy(scale)
+//       .subtract(this._map._getNewPixelOrigin(center, zoom)).round()
+//
+//     if (L.Browser.any3d) {
+//       L.DomUtil.setTransform(level.el, translate, scale)
+//     } else {
+//       L.DomUtil.setPosition(level.el, translate)
+//     }
+//   },
+//   _getTiledPixelBounds: function (_center) {
+//     let center = _center
+//     // if (center !== undefined && this.options) {
+//     //   if (this.options.corrdType === 'gcj02') {
+//     //     center = L.coordConver().gps84_To_gcj02(_center.lng, _center.lat)
+//     //   } else if (this.options.corrdType === 'bd09') {
+//     //     center = L.coordConver().gps84_To_bd09(_center.lng, _center.lat)
+//     //   }
+//     // }
+//     const map = this._map
+//     const mapZoom = map._animatingZoom ? Math.max(map._animateToZoom, map.getZoom()) : map.getZoom()
+//     const scale = map.getZoomScale(mapZoom, this._tileZoom)
+//     const pixelCenter = map.project(center, this._tileZoom).floor()
+//     const halfSize = map.getSize().divideBy(scale * 2)
+//
+//     return new L.Bounds(pixelCenter.subtract(halfSize), pixelCenter.add(halfSize))
+//   },
+// })
 
 export default L

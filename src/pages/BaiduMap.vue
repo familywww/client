@@ -195,8 +195,8 @@
 import 'leaflet/dist/leaflet.css'
 import L from '../plugins/leafletEx'
 import 'leaflet-draw'
-import * as Vue2Leaflet from 'vue2-leaflet'
-import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
+// import * as Vue2Leaflet from 'vue2-leaflet'
+// import vueLeafletMarkerCluster from 'vue2-leaflet-markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import videoJs from 'video.js'
 import 'video.js/dist/video-js.css'
@@ -328,17 +328,17 @@ const iconSetting = {
 export default {
   name: 'mapTest',
   components: {
-    'l-map': Vue2Leaflet.LMap,
-    'l-control-layers': Vue2Leaflet.LControlLayers,
-    'l-control-scale': Vue2Leaflet.LControlScale,
-    'l-tile-layer': Vue2Leaflet.LTileLayer,
+    // 'l-map': Vue2Leaflet.LMap,
+    // 'l-control-layers': Vue2Leaflet.LControlLayers,
+    // 'l-control-scale': Vue2Leaflet.LControlScale,
+    // 'l-tile-layer': Vue2Leaflet.LTileLayer,
     // 'l-wms-tile-layer': Vue2Leaflet.LWMSTileLayer,
-    'l-polyline': Vue2Leaflet.LPolyline,
+    // 'l-polyline': Vue2Leaflet.LPolyline,
     // 'l-polygon': Vue2Leaflet.LPolygon,
-    'l-marker': Vue2Leaflet.LMarker,
-    'l-tooltip': Vue2Leaflet.LTooltip,
+    // 'l-marker': Vue2Leaflet.LMarker,
+    // 'l-tooltip': Vue2Leaflet.LTooltip,
     // 'l-circle': Vue2Leaflet.LCircle,
-    'l-marker-cluster': vueLeafletMarkerCluster,
+    // 'l-marker-cluster': vueLeafletMarkerCluster,
   },
   created () {
     this.init()

@@ -9,6 +9,7 @@
       </v-tabs>
       <l-map
         ref="map"
+        style="height: 95.5%"
         :zoom.sync="mapControl.zoom"
         :center.sync="mapControl.center"
         :min-zoom="mapControl.minZoom"
@@ -92,13 +93,15 @@
     <v-card max-width="220" style="z-index:900;position: absolute;top:47px;right:500px; background: #2b3575a8">
       <v-card-title>
         <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
-        <v-icon color="#00c421" @click="setZoom">mdi-home-group</v-icon>
+        <v-icon color="#00c5f5" @click="setZoom(0)">mdi-magnify-plus</v-icon>
+        <v-icon color="#00c5f5" @click="setZoom(1)">mdi-magnify-minus</v-icon>
+        <v-icon color="#00c421">mdi-home-group</v-icon>
         <v-icon color="#f44a00">mdi-layers-triple</v-icon>
         <v-icon color="#eb9201">mdi-traffic-light</v-icon>
         <v-icon color="#fe2954">mdi-hydro-power</v-icon>
         <v-icon color="#44b900">mdi-leaf</v-icon>
-        <v-icon color="#00c5f5">mdi-tractor</v-icon>
-        <v-icon color="#00c5f5">mdi-briefcase-variant</v-icon>
+<!--        <v-icon color="#00c5f5">mdi-tractor</v-icon>-->
+<!--        <v-icon color="#00c5f5">mdi-briefcase-variant</v-icon>-->
       </v-card-title>
       <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="920px" style="background: #ffffff00">
         <v-list-group
@@ -347,7 +350,7 @@ export default {
       comboboxItems: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, ],
       comboboxVal: 0,
       scrollInvoked: 0,
-      mapUrlIndex: 0,
+      mapUrlIndex: 1,
       mapControl: {
         tile: [
           {
@@ -367,7 +370,7 @@ export default {
           },
           {
             name: '百度',
-            crs: L.CRS.Baidu(true),
+            crs: L.CRS.Baidu(true, true),
             tms: true,
             subdomains: '012',
             maps: [
@@ -435,7 +438,7 @@ export default {
         options: {
           attributionControl: false,
           zoomControl: false,
-          animate: true,
+          zoomAnimate: false,
         },
       },
       moveMarker: null,
@@ -499,12 +502,26 @@ export default {
       playerJs: null,
     }
   },
+  watch: {
+    // mapUrlIndex: {
+    //   handler (now, old) {
+    //     if (now === 1) {
+    //       this.mapControl.zoom += 1
+    //     }
+    //   },
+    // },
+  },
   methods: {
     zoomEnd (e) {
+      // console.log(e.target.getZoom(), e.target.options.crs)
       this.comboboxVal = e.target.getZoom()
     },
-    setZoom () {
-      this.$refs.map.mapObject.setZoom(this.comboboxVal)
+    setZoom (out) {
+      if (out) {
+        this.$refs.map.mapObject.zoomOut()
+      } else {
+        this.$refs.map.mapObject.zoomIn()
+      }
     },
     makeMarkerObj (count) {
       let lngEx = 0.0
