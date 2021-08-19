@@ -1,15 +1,11 @@
 <template>
   <v-app id="app" :class="moveMarkerClassName" >
-    <div style="width: 1415px;height: 100%;">
-      <v-tabs v-model="mapUrlIndex" dark background-color="teal darken-3" show-arrows opaque="0.8">
-        <v-tabs-slider color="teal lighten-3"></v-tabs-slider>
-        <v-tab v-for="(subItem, j) in mapControl.tile" :key="j" :value="j">
-          {{ subItem.name }}
-        </v-tab>
-      </v-tabs>
+    <div style="width: 100%;height: 100%;background: red">
+      <v-btn-toggle v-model="mapUrlIndex" style="position:absolute;top:0px;left:10px;background:#2b3575a8;z-index:500;">
+        <v-btn v-for="(subItem, j) in mapControl.tile" :key="j" :value="j" style="background:#2b3575a8;color: white">{{ subItem.name }}</v-btn>
+      </v-btn-toggle>
       <l-map
         ref="map"
-        style="height: 95.5%"
         :zoom.sync="mapControl.zoom"
         :center.sync="mapControl.center"
         :min-zoom="mapControl.minZoom"
@@ -19,7 +15,7 @@
         @move="zoomEnd"
       >
         <l-control-scale position="topleft" :imperial="false" :metric="true" />
-        <l-control-layers position="topleft" :sortLayers="false" />
+        <l-control-layers position="topleft" :sortLayers="false" :collapsed="false"/>
         <l-tile-layer
           v-for="layer in mapControl.tile[mapUrlIndex].maps"
           :key="layer.name"
@@ -89,79 +85,66 @@
           :color="'#fffb11'"
         ></l-polyline>
       </l-map>
-    </div>
-    <v-card max-width="220" style="z-index:900;position: absolute;top:47px;right:500px; background: #2b3575a8">
-      <v-card-title>
-        <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
-        <v-icon color="#00c5f5" @click="setZoom(0)">mdi-magnify-plus</v-icon>
-        <v-icon color="#00c5f5" @click="setZoom(1)">mdi-magnify-minus</v-icon>
-        <v-icon color="#00c421">mdi-home-group</v-icon>
-        <v-icon color="#f44a00">mdi-layers-triple</v-icon>
-        <v-icon color="#eb9201">mdi-traffic-light</v-icon>
-        <v-icon color="#fe2954">mdi-hydro-power</v-icon>
-        <v-icon color="#44b900">mdi-leaf</v-icon>
-<!--        <v-icon color="#00c5f5">mdi-tractor</v-icon>-->
-<!--        <v-icon color="#00c5f5">mdi-briefcase-variant</v-icon>-->
-      </v-card-title>
-      <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" height="920px" style="background: #ffffff00">
-        <v-list-group
-          sub-group
-          style="margin: 0px 0px 0px -20px"
-          v-for="item in markers"
-          :key="item.id"
-          :value="false"
-        >
-          <template v-slot:activator>
-            <v-list-item-content>
-              <v-list-item-title class="white--text">{{ item.name }}</v-list-item-title>
-            </v-list-item-content>
-          </template>
-          <v-list-item
-            v-for="(subItem, j) in item.children"
-            :key="j"
-            @click="listClick(item, subItem)"
-            @mousedown="cameraCursorShow(subItem)"
-          >
-            <v-list-item-icon style="margin-right: 2px">
-              <v-icon
-                :color="markerIconOptions[item.type][subItem.status].markerOption.color"
-                :style="'font-style: normal;'"
-                v-text="markerIconOptions[item.type][subItem.status].markerOption.ftContentOrClass
-                     || markerIconOptions[item.type][subItem.status].markerOption.bgContentOrClass.replace('mdi ', '')
-                       "
-              ></v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title class="white--text" v-text="subItem.videoItem ? subItem.videoItem.name : subItem.id "></v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-group>
-      </v-list>
-    </v-card>
-    <video
-      ref="videoFlv"
-      style="z-index:900;position: absolute;top:10px;right:10px; width: 480px; height: 270px"
-      autoplay
-      loop
-      controls
-      controlsList="nodownload"
-      disablePictureInPicture
-      @mouseover="mouseOverVideo(2)"
-      @mouseout="mouseOutVideo()"
-      @mouseup="videoPlay(2)"
-    >
-    </video>
-    <div ref="videoJs" style="z-index:900;position: absolute;top:300px;right:10px; width: 480px; height: 270px">
+      <v-card max-width="220" style="z-index:500;position:absolute;top:0px;right:0px;background:#2b3575a8">
+        <v-card-title>
+          <v-combobox v-model="comboboxVal" :items="comboboxItems" label="输入或选择" outlined dense></v-combobox>
+          <v-icon color="#00c5f5" @click="setZoom(0)">mdi-magnify-plus</v-icon>
+          <v-icon color="#00c5f5" @click="setZoom(1)">mdi-magnify-minus</v-icon>
+          <v-icon color="#00c421">mdi-home-group</v-icon>
+          <v-icon color="#f44a00">mdi-layers-triple</v-icon>
+          <v-icon color="#eb9201">mdi-traffic-light</v-icon>
+          <v-icon color="#fe2954">mdi-hydro-power</v-icon>
+          <v-icon color="#44b900">mdi-leaf</v-icon>
+        </v-card-title>
+        <v-list v-scroll.self="onScroll" dense class="overflow-y-auto" max-width="220" style="position:fixed;width:100%;height:100%;background: #2b3575a8">
+          <v-list-group sub-group style="margin: 0px 0px 0px -20px" v-for="item in markers" :key="item.id" :value="false">
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title class="white--text">{{ item.name }}</v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <v-list-item v-for="(subItem, j) in item.children" :key="j" @click="listClick(item, subItem)" @mousedown="cameraCursorShow(subItem)">
+              <v-list-item-icon style="margin-right: 2px">
+                <v-icon
+                  :color="markerIconOptions[item.type][subItem.status].markerOption.color"
+                  :style="'font-style: normal;'"
+                  v-text="markerIconOptions[item.type][subItem.status].markerOption.ftContentOrClass
+                       || markerIconOptions[item.type][subItem.status].markerOption.bgContentOrClass.replace('mdi ', '')
+                         "
+                />
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title class="white--text" v-text="subItem.videoItem ? subItem.videoItem.name : subItem.id "></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-group>
+        </v-list>
+      </v-card>
       <video
-        id="videoJs"
-        style="width: 100%; height: 100%"
-        class="video-js"
+        ref="videoFlv"
+        style="position:fixed;margin-left:calc(100% - 470px);margin-top:-145px;width:240px;height:135px;z-index:500;"
+        autoplay
+        loop
         controls
-        @mouseover="mouseOverVideo(1)"
+        controlsList="nodownload"
+        disablePictureInPicture
+        @mouseover="mouseOverVideo(2)"
         @mouseout="mouseOutVideo()"
-        @mouseup="videoPlay(1)"
+        @mouseup="videoPlay(2)"
       >
       </video>
+      <div ref="videoJs" style="position:fixed;margin-left:calc(100% - 720px);margin-top:-145px;width:240px;height:135px;z-index:500;">
+        <video
+          id="videoJs"
+          style="width: 100%; height: 100%"
+          class="video-js"
+          controls
+          @mouseover="mouseOverVideo(1)"
+          @mouseout="mouseOutVideo()"
+          @mouseup="videoPlay(1)"
+        >
+        </video>
+      </div>
     </div>
     <canvas ref="canvas" style="position:absolute;top:0;left:0;z-index: 901;pointer-events:none"/>
   </v-app>
@@ -363,7 +346,8 @@ export default {
               { name: 'st7', zIndex: 2, opacity: 1.0, visible: false, type: 'base', url: '//webst0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
               { name: 'rd7', zIndex: 3, opacity: 1.0, visible: true, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', },
               { name: 'rd8', zIndex: 4, opacity: 1.0, visible: false, type: 'base', url: '//webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', },
-              { name: '标签', zIndex: 5, opacity: 1.0, visible: false, type: 'overlay', url: '//webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', },
+              { name: '标签', zIndex: 98, opacity: 1.0, visible: false, type: 'overlay', url: '//webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', },
+              { name: '路况', zIndex: 99, opacity: 1.0, visible: false, type: 'overlay', url: '//history.traffic.amap.com/traffic?type=2&day=' + new Date().getDay() + '&hh=' + new Date().getHours() + '&mm=' + new Date().getMinutes() + '&x={x}&y={y}&z={z}&ra=0.8974365135840192', },
             ],
             layers: [
             ],
@@ -721,6 +705,17 @@ export default {
 
 </script>
 <style>
+.leaflet-top {
+  top: 50px
+}
+.leaflet-control-scale {
+  left: 7px;
+}
+.leaflet-control-scale-line, .leaflet-control-layers {
+  border: none;
+  background: #2b3575a8;
+  color: white;
+}
 .leaflet-tooltip {
   background-color: #2b3575;
   border: 1px solid #00e0ec;
