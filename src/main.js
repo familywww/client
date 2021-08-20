@@ -1,3 +1,4 @@
+import '@mdi/font/css/materialdesignicons.css'
 import Vue from 'vue'
 import router from './plugins/router'
 import vuetify from './plugins/vuetify'

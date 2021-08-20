@@ -5,7 +5,7 @@ module.exports = {
   outputDir: process.env.VUE_APP_OUTPUT_DIR,
   assetsDir: "./aassets",
   devServer: {
-    port: 80,
+    port: 81,
     overlay: {
       warnings: false,
       errors: true

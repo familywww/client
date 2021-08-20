@@ -9,6 +9,7 @@
     "dev": "webpack-dev-server"
   },
   "dependencies": {
+    "@mdi/font": "^5.9.55",
     "axios": "^0.21.1",
     "core-js": "^3.8.2",
     "flv.js": "^1.5.0",

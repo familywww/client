@@ -126,12 +126,19 @@ function getBeforeStyle (className) {
 }
 
 function updateRule (selector, styleObj) {
-  for (let i = 0; i < document.styleSheets[0].cssRules.length; i++) {
-    if (document.styleSheets[0].cssRules[i].selectorText === selector) {
-      document.styleSheets[0].deleteRule(i)
+  let i = 0
+  for (i = 0; i < document.styleSheets.length; i++) {
+    if (document.styleSheets[i].ownerNode.nodeName === 'STYLE') {
+      break
     }
   }
-  document.styleSheets[0].addRule(selector, styleObj)
+
+  for (let j = 0; j < document.styleSheets[i].cssRules.length; j++) {
+    if (document.styleSheets[i].cssRules[j].selectorText === selector) {
+      document.styleSheets[i].deleteRule(j)
+    }
+  }
+  document.styleSheets[i].addRule(selector, styleObj)
 }
 
 const presetOpt = [
