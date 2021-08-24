@@ -15,7 +15,7 @@ module.exports = {
         target:  process.env.VUE_APP_BASE_API,
         changeOrigin: true,
         pathRewrite: {
-          '^/public': ''
+          '^/': '/api'
         }
       },
     }

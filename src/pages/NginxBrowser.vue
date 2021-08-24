@@ -1,14 +1,7 @@
 <template>
-  <v-app id="app">
-    <v-navigation-drawer app>
-      <v-treeview
-        :items.sync="folders"
-        return-object
-        item-key="url"
-        item-text="text"
-        activatable
-        @update:active="folderClick"
-      >
+  <v-main>
+    <v-navigation-drawer permanent fixed width="auto" style="margin-top: 47px;">
+      <v-treeview :items.sync="folders" return-object item-key="url" item-text="text" activatable @update:active="folderClick">
         <template v-slot:append="{ item }" >
           <v-icon color="orange">
             {{ active.url === item.url ? 'mdi-folder-open' : 'mdi-folder' }}
@@ -16,7 +9,7 @@
         </template>
       </v-treeview>
     </v-navigation-drawer>
-    <v-app-bar app>
+    <v-app-bar permanent dense>
       <v-breadcrumbs :items="links" divider="-"></v-breadcrumbs>
     </v-app-bar>
     <v-main>
@@ -33,7 +26,7 @@
         </v-card>
       </v-container>
     </v-main>
-  </v-app>
+  </v-main>
 </template>
 
 <script>
